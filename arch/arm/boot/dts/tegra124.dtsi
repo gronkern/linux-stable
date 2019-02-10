@@ -108,6 +108,8 @@
 			resets = <&tegra_car 27>;
 			reset-names = "dc";
 
+			nvidia,outputs = <&sor>;
+
 			iommus = <&mc TEGRA_SWGROUP_DC>;
 
 			nvidia,head = <0>;
@@ -122,6 +124,8 @@
 			clock-names = "dc", "parent";
 			resets = <&tegra_car 26>;
 			reset-names = "dc";
+
+			nvidia,outputs = <&sor>;
 
 			iommus = <&mc TEGRA_SWGROUP_DCB>;
 
@@ -140,7 +144,7 @@
 			status = "disabled";
 		};
 
-		sor@54540000 {
+		sor: sor@54540000 {
 			compatible = "nvidia,tegra124-sor";
 			reg = <0x0 0x54540000 0x0 0x00040000>;
 			interrupts = <GIC_SPI 76 IRQ_TYPE_LEVEL_HIGH>;
@@ -149,7 +153,7 @@
 				 <&tegra_car TEGRA124_CLK_PLL_DP>,
 				 <&tegra_car TEGRA124_CLK_CLK_M>;
 			clock-names = "sor", "parent", "dp", "safe";
-			resets = <&tegra_car 182>;
+			resets = <&tegra_car 39>;
 			reset-names = "sor";
 			status = "disabled";
 		};
@@ -161,7 +165,7 @@
 			clocks = <&tegra_car TEGRA124_CLK_DPAUX>,
 				 <&tegra_car TEGRA124_CLK_PLL_DP>;
 			clock-names = "dpaux", "parent";
-			resets = <&tegra_car 181>;
+			resets = <&tegra_car 2>;
 			reset-names = "dpaux";
 			status = "disabled";
 		};
@@ -1142,24 +1146,28 @@
 			clock-names = "cpu_g", "cpu_lp", "pll_x", "pll_p", "dfll";
 			/* FIXME: what's the actual transition time? */
 			clock-latency = <300000>;
+			clock-frequency = <2300000000>;
 		};
 
 		cpu@1 {
 			device_type = "cpu";
 			compatible = "arm,cortex-a15";
 			reg = <1>;
+			clock-frequency = <2300000000>;
 		};
 
 		cpu@2 {
 			device_type = "cpu";
 			compatible = "arm,cortex-a15";
 			reg = <2>;
+			clock-frequency = <2300000000>;
 		};
 
 		cpu@3 {
 			device_type = "cpu";
 			compatible = "arm,cortex-a15";
 			reg = <3>;
+			clock-frequency = <2300000000>;
 		};
 	};
 

@@ -99,29 +99,33 @@ static irqreturn_t hpd_irq(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
-int tegra_output_probe(struct tegra_output *output)
+int tegra_output_probe(struct device_node *node, struct tegra_output *output)
 {
 	struct device_node *ddc, *panel;
 	int err, size;
 
-	if (!output->of_node)
-		output->of_node = output->dev->of_node;
+	if (!node)
+		node = output->dev->of_node;
 
-	panel = of_parse_phandle(output->of_node, "nvidia,panel", 0);
+	panel = of_parse_phandle(node, "panel", 0);
 	if (panel) {
+		//Register
 		output->panel = of_drm_find_panel(panel);
-		if (IS_ERR(output->panel))
+		if (IS_ERR(output->panel)) {
+			dev_err(output->dev, "nvidia,panel not found\n");
 			return PTR_ERR(output->panel);
+		}
 
 		of_node_put(panel);
 	}
 
-	output->edid = of_get_property(output->of_node, "nvidia,edid", &size);
+	output->edid = of_get_property(node, "nvidia,edid", &size);
 
-	ddc = of_parse_phandle(output->of_node, "nvidia,ddc-i2c-bus", 0);
+	ddc = of_parse_phandle(node, "nvidia,ddc-i2c-bus", 0);
 	if (ddc) {
 		output->ddc = of_find_i2c_adapter_by_node(ddc);
 		if (!output->ddc) {
+			dev_err(output->dev, "nvidia,ddc-i2c-bus not found\n");
 			err = -EPROBE_DEFER;
 			of_node_put(ddc);
 			return err;
@@ -130,9 +134,10 @@ int tegra_output_probe(struct tegra_output *output)
 		of_node_put(ddc);
 	}
 
-	output->hpd_gpio = of_get_named_gpio_flags(output->of_node,
-						   "nvidia,hpd-gpio", 0,
-						   &output->hpd_gpio_flags);
+
+	output->hpd_gpio = of_get_named_gpio_flags(node,
+					   "nvidia,hpd", 0,
+					   &output->hpd_gpio_flags);
 	if (gpio_is_valid(output->hpd_gpio)) {
 		unsigned long flags;
 

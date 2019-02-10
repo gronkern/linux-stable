@@ -21,6 +21,7 @@
 #include <linux/of.h>
 #include <linux/clk/tegra.h>
 #include <linux/reset-controller.h>
+#include <linux/device.h>
 
 #include <soc/tegra/fuse.h>
 
@@ -302,7 +303,7 @@ static struct reset_controller_dev rst_ctlr = {
 void __init tegra_add_of_provider(struct device_node *np,
 				  void *clk_src_onecell_get)
 {
-	int i;
+	int i, ret;
 
 	for (i = 0; i < clk_num; i++) {
 		if (IS_ERR(clks[i])) {
@@ -319,8 +320,17 @@ void __init tegra_add_of_provider(struct device_node *np,
 	of_clk_add_provider(np, clk_src_onecell_get, &clk_data);
 
 	rst_ctlr.of_node = np;
+	rst_ctlr.dev = NULL;
 	rst_ctlr.nr_resets = periph_banks * 32 + num_special_reset;
-	reset_controller_register(&rst_ctlr);
+	ret = reset_controller_register(&rst_ctlr);
+
+	if(ret) {
+		pr_warn("%s: %d failed to register resets for tegra\n",
+					rst_ctlr.of_node->name, ret);
+	} else {
+		pr_debug("%s: registered succesfully\n",
+					rst_ctlr.of_node->name);
+	}
 }
 
 void __init tegra_init_special_resets(unsigned int num,

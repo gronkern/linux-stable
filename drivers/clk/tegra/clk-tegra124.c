@@ -997,6 +997,16 @@ static struct tegra_devclk devclks[] __initdata = {
 	{ .con_id = "hda", .dt_id = TEGRA124_CLK_HDA },
 	{ .con_id = "hda2codec_2x", .dt_id = TEGRA124_CLK_HDA2CODEC_2X },
 	{ .con_id = "hda2hdmi", .dt_id = TEGRA124_CLK_HDA2HDMI },
+	{ .con_id = "pll-dp", .dt_id = TEGRA124_CLK_PLL_DP },
+	{ .con_id = "sor0", .dt_id = TEGRA124_CLK_SOR0 },
+	{ .con_id = "sor0_lvds", .dt_id = TEGRA124_CLK_SOR0_LVDS },
+	{ .con_id = "mipi-cal", .dt_id = TEGRA124_CLK_MIPI_CAL },
+	{ .con_id = "dpaux", .dt_id = TEGRA124_CLK_DPAUX },
+	{ .con_id = "hdmi", .dt_id = TEGRA124_CLK_HDMI },
+	{ .con_id = "dsia", .dt_id = TEGRA124_CLK_DSIALP },
+	{ .con_id = "dsib", .dt_id = TEGRA124_CLK_DSIBLP },
+	{ .con_id = "disp1", .dt_id = TEGRA124_CLK_DISP1 },
+	{ .con_id = "disp2", .dt_id = TEGRA124_CLK_DISP2 },
 };
 
 static struct clk **clks;
@@ -1010,24 +1020,10 @@ static __init void tegra124_periph_clk_init(void __iomem *clk_base,
 	clk = clk_register_fixed_factor(NULL, "xusb_ss_div2", "xusb_ss_src", 0,
 					1, 2);
 	clks[TEGRA124_CLK_XUSB_SS_DIV2] = clk;
-
+	
 	clk = tegra_clk_register_periph_fixed("dpaux", "pll_p", 0, clk_base,
-					      1, 17, 181);
+					      1, 17, TEGRA124_CLK_DPAUX);
 	clks[TEGRA124_CLK_DPAUX] = clk;
-
-	clk = clk_register_gate(NULL, "pll_d_dsi_out", "pll_d_out0", 0,
-				clk_base + PLLD_MISC, 30, 0, &pll_d_lock);
-	clks[TEGRA124_CLK_PLL_D_DSI_OUT] = clk;
-
-	clk = tegra_clk_register_periph_gate("dsia", "pll_d_dsi_out", 0,
-					     clk_base, 0, 48,
-					     periph_clk_enb_refcnt);
-	clks[TEGRA124_CLK_DSIA] = clk;
-
-	clk = tegra_clk_register_periph_gate("dsib", "pll_d_dsi_out", 0,
-					     clk_base, 0, 82,
-					     periph_clk_enb_refcnt);
-	clks[TEGRA124_CLK_DSIB] = clk;
 
 	clk = tegra_clk_register_mc("mc", "emc", clk_base + CLK_SOURCE_EMC,
 				    &emc_lock);
@@ -1151,7 +1147,7 @@ static void __init tegra124_pll_init(void __iomem *clk_base,
 					CLK_SET_RATE_PARENT, 1, 2);
 	clk_register_clkdev(clk, "pll_d_out0", NULL);
 	clks[TEGRA124_CLK_PLL_D_OUT0] = clk;
-
+	
 	/* PLLRE */
 	clk = tegra_clk_register_pllre("pll_re_vco", "pll_ref", clk_base, pmc,
 			     0, &pll_re_vco_params, &pll_re_lock, pll_ref_freq);
@@ -1193,7 +1189,6 @@ static void __init tegra124_pll_init(void __iomem *clk_base,
 					CLK_SET_RATE_PARENT, 1, 1);
 	clk_register_clkdev(clk, "pll_d2_out0", NULL);
 	clks[TEGRA124_CLK_PLL_D2_OUT0] = clk;
-
 }
 
 /* Tegra124 CPU clock and reset control functions */
@@ -1300,6 +1295,13 @@ static struct tegra_clk_init_table tegra124_init_table[] __initdata = {
 	{ TEGRA124_CLK_CCLK_G, TEGRA124_CLK_CLK_MAX, 0, 1 },
 	{ TEGRA124_CLK_HDA, TEGRA124_CLK_PLL_P, 102000000, 0 },
 	{ TEGRA124_CLK_HDA2CODEC_2X, TEGRA124_CLK_PLL_P, 48000000, 0 },
+	{ TEGRA124_CLK_DPAUX, TEGRA124_CLK_PLL_P, 12000000, 0 },
+	{ TEGRA124_CLK_MIPI_CAL, TEGRA124_CLK_CLK72MHZ, 12000000, 0 },
+	{ TEGRA124_CLK_DISP2, TEGRA124_CLK_PLL_P, 12000000, 1},
+	{ TEGRA124_CLK_SOR0_LVDS, TEGRA124_CLK_PLL_P, 12000000, 1 },
+	{ TEGRA124_CLK_SOR0, TEGRA124_CLK_SOR0_LVDS, 12000000, 1 },
+	{ TEGRA124_CLK_DISP1, TEGRA124_CLK_PLL_D_OUT0, 142000000, 1},
+	{ TEGRA124_CLK_HDMI, TEGRA124_CLK_PLL_D_OUT0, 142000000, 1},
 	/* must be the last entry */
 	{ TEGRA124_CLK_CLK_MAX, TEGRA124_CLK_CLK_MAX, 0, 0 },
 };

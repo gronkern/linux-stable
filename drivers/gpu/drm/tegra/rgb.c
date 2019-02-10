@@ -232,7 +232,7 @@ int tegra_dc_rgb_probe(struct tegra_dc *dc)
 	rgb->output.of_node = np;
 	rgb->dc = dc;
 
-	err = tegra_output_probe(&rgb->output);
+	err = tegra_output_probe(rgb->output.of_node, &rgb->output);
 	if (err < 0)
 		return err;
 

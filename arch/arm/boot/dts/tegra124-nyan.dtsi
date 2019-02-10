@@ -20,10 +20,9 @@
 	host1x@50000000 {
 		hdmi@54280000 {
 			status = "okay";
-
-			vdd-supply = <&vdd_3v3_hdmi>;
+			vdd-supply = <&vdd_3v3_run>;
 			pll-supply = <&vdd_hdmi_pll>;
-			hdmi-supply = <&vdd_5v0_hdmi>;
+			hdmi-supply = <&vdd_5v0_avd_lcd>;
 
 			nvidia,ddc-i2c-bus = <&hdmi_ddc>;
 			nvidia,hpd-gpio =
@@ -32,13 +31,12 @@
 
 		sor@54540000 {
 			status = "okay";
-
 			nvidia,dpaux = <&dpaux>;
 			nvidia,panel = <&panel>;
 		};
 
 		dpaux@545c0000 {
-			vdd-supply = <&vdd_3v3_panel>;
+			vdd-supply = <&vdd_3v3_dpaux>;
 			status = "okay";
 		};
 	};
@@ -74,7 +72,7 @@
 			reg = <0x4c>;
 			interrupt-parent = <&gpio>;
 			interrupts = <TEGRA_GPIO(I, 6) IRQ_TYPE_LEVEL_LOW>;
-
+			vcc-supply = <&vdd_3v3_sensor>;
 			#thermal-sensor-cells = <1>;
 		};
 	};
@@ -166,12 +164,12 @@
 				vin-ldo0-supply = <&vdd_1v35_lp0>;
 				vin-ldo1-6-supply = <&vdd_3v3_run>;
 				vin-ldo2-5-7-supply = <&vddio_1v8>;
-				vin-ldo3-4-supply = <&vdd_3v3_sys>;
+				vin-ldo3-4-supply = <&vdd_3v3_run>;
 				vin-ldo9-10-supply = <&vdd_5v0_sys>;
 				vin-ldo11-supply = <&vdd_3v3_run>;
 
 				vdd_cpu: sd0 {
-					regulator-name = "+VDD_CPU_AP";
+					regulator-name = "+13.5V_VDD_CPU_AP";
 					regulator-min-microvolt = <700000>;
 					regulator-max-microvolt = <1350000>;
 					regulator-min-microamp = <3500000>;
@@ -182,7 +180,7 @@
 				};
 
 				sd1 {
-					regulator-name = "+VDD_CORE";
+					regulator-name = "+13.5V_VDD_CORE";
 					regulator-min-microvolt = <700000>;
 					regulator-max-microvolt = <1350000>;
 					regulator-min-microamp = <2500000>;
@@ -222,7 +220,7 @@
 				};
 
 				vdd_gpu: sd6 {
-					regulator-name = "+VDD_GPU_AP";
+					regulator-name = "+12V_VDD_GPU_AP";
 					regulator-min-microvolt = <650000>;
 					regulator-max-microvolt = <1200000>;
 					regulator-min-microamp = <3500000>;
@@ -276,7 +274,7 @@
 				};
 
 				vddio_sdmmc3: ldo6 {
-					regulator-name = "+VDDIO_SDMMC3";
+					regulator-name = "+3.3V_VDDIO_SDMMC3";
 					regulator-min-microvolt = <1800000>;
 					regulator-max-microvolt = <3300000>;
 				};
@@ -519,7 +517,7 @@
 		compatible = "pwm-backlight";
 
 		enable-gpios = <&gpio TEGRA_GPIO(H, 2) GPIO_ACTIVE_HIGH>;
-		power-supply = <&vdd_led>;
+		power-supply = <&vdd_lcd_bl_en>;
 		pwms = <&pwm 1 1000000>;
 
 		default-brightness-level = <224>;
@@ -557,6 +555,7 @@
 			 240 241 242 243 244 245 246 247
 			 248 249 250 251 252 253 254 255
 			 256>;
+		status = "okay";
 	};
 
 	clocks {
@@ -588,6 +587,7 @@
 			linux,code = <KEY_RESERVED>;
 			debounce-interval = <1>;
 			wakeup-source;
+			status = "okay";
 		};
 
 		power {
@@ -596,6 +596,7 @@
 			linux,code = <KEY_POWER>;
 			debounce-interval = <30>;
 			wakeup-source;
+			status = "okay";
 		};
 	};
 
@@ -625,15 +626,16 @@
 			vin-supply = <&vdd_mux>;
 		};
 
-		vdd_3v3_sys: regulator@2 {
+		vdd_usb1_vbus: regulator@2 {
 			compatible = "regulator-fixed";
 			reg = <2>;
-			regulator-name = "+3.3V_SYS";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			regulator-always-on;
-			regulator-boot-on;
-			vin-supply = <&vdd_mux>;
+			regulator-name = "+5V_USB_HS";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio TEGRA_GPIO(N, 4) GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+			gpio-open-drain;
+			vin-supply = <&vdd_5v0_sys>;
 		};
 
 		vdd_3v3_run: regulator@3 {
@@ -646,48 +648,55 @@
 			regulator-boot-on;
 			gpio = <&pmic 1 GPIO_ACTIVE_HIGH>;
 			enable-active-high;
-			vin-supply = <&vdd_3v3_sys>;
-		};
-
-		vdd_3v3_hdmi: regulator@4 {
-			compatible = "regulator-fixed";
-			reg = <4>;
-			regulator-name = "+3.3V_AVDD_HDMI_AP_GATED";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			vin-supply = <&vdd_3v3_run>;
-		};
-
-		vdd_led: regulator@5 {
-			compatible = "regulator-fixed";
-			reg = <5>;
-			regulator-name = "+VDD_LED";
-			gpio = <&gpio TEGRA_GPIO(P, 2) GPIO_ACTIVE_HIGH>;
-			enable-active-high;
 			vin-supply = <&vdd_mux>;
 		};
 
-		vdd_5v0_ts: regulator@6 {
+		vdd_5v0_hdmi: regulator@4 {
 			compatible = "regulator-fixed";
-			reg = <6>;
-			regulator-name = "+5V_VDD_TS_SW";
+			reg = <4>;
+			regulator-name = "+3.3V_AVDD_HDMI_AP_GATED";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
-			regulator-boot-on;
-			gpio = <&gpio TEGRA_GPIO(K, 1) GPIO_ACTIVE_HIGH>;
+			gpio = <&gpio TEGRA_GPIO(K, 6) GPIO_ACTIVE_HIGH>;
+			vin-supply = <&vdd_5v0_sys>;
 			enable-active-high;
+			regulator-boot-on;
+		};
+
+		vdd_5v0_avd_lcd: regulator@5 {
+			compatible = "regulator-fixed";
+			reg = <5>;
+			regulator-name = "+5.0V_AVD_LCD";
+			enable-active-high;
+			regulator-boot-on;
+			gpio = <&pmic 4 GPIO_ACTIVE_HIGH>;
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
 			vin-supply = <&vdd_5v0_sys>;
 		};
 
-		vdd_usb1_vbus: regulator@7 {
+		vdd_5v0_backlight: regulator@6 {
+			compatible = "regulator-fixed";
+			reg = <6>;
+			regulator-name = "+5V_VDD_BACKLIGHT";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			enable-active-high;
+			regulator-boot-on;
+			gpio = <&gpio TEGRA_GPIO(P, 2) GPIO_ACTIVE_HIGH>;
+			vin-supply = <&vdd_5v0_sys>;
+		};
+
+		vdd_lcd_bl_en: regulator@7 {
 			compatible = "regulator-fixed";
 			reg = <7>;
 			regulator-name = "+5V_USB_HS";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio TEGRA_GPIO(N, 4) GPIO_ACTIVE_HIGH>;
+			//handled in backlight
+			//gpio = <&gpio TEGRA_GPIO(H, 2) GPIO_ACTIVE_HIGH>;
 			enable-active-high;
-			gpio-open-drain;
+			regulator-boot-on;
 			vin-supply = <&vdd_5v0_sys>;
 		};
 
@@ -703,15 +712,16 @@
 			vin-supply = <&vdd_5v0_sys>;
 		};
 
-		vdd_3v3_panel: regulator@9 {
+		vdd_5v0_panel: regulator@9 {
 			compatible = "regulator-fixed";
 			reg = <9>;
-			regulator-name = "+3.3V_PANEL";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			gpio = <&pmic 4 GPIO_ACTIVE_HIGH>;
+			regulator-name = "+5V0_PANEL";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&pmic 1 GPIO_ACTIVE_HIGH>;
 			enable-active-high;
-			vin-supply = <&vdd_3v3_run>;
+			regulator-boot-on;
+			vin-supply = <&vdd_5v0_sys>;
 		};
 
 		vdd_3v3_lp0: regulator@10 {
@@ -725,9 +735,9 @@
 			 * controllers so that it can be enabled on demand.
 			 */
 			regulator-always-on;
-			gpio = <&pmic 2 GPIO_ACTIVE_HIGH>;
+			gpio = <&gpio TEGRA_GPIO(R, 0) GPIO_ACTIVE_HIGH>;
 			enable-active-high;
-			vin-supply = <&vdd_3v3_sys>;
+			vin-supply = <&vdd_3v3_run>;
 		};
 
 		vdd_hdmi_pll: regulator@11 {
@@ -738,17 +748,29 @@
 			regulator-max-microvolt = <1050000>;
 			gpio = <&gpio TEGRA_GPIO(H, 7) GPIO_ACTIVE_LOW>;
 			vin-supply = <&vdd_1v05_run>;
+			regulator-boot-on;
 		};
 
-		vdd_5v0_hdmi: regulator@12 {
+		vdd_3v3_dpaux: regulator@12 {
 			compatible = "regulator-fixed";
 			reg = <12>;
-			regulator-name = "+5V_HDMI_CON";
-			regulator-min-microvolt = <5000000>;
-			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio TEGRA_GPIO(K, 6) GPIO_ACTIVE_HIGH>;
+			regulator-name = "+3V3_DPAUX_CON";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			vin-supply = <&vdd_3v3_run>;
+			regulator-boot-on;
+			regulator-enable-always-on;
+		};
+		
+		vdd_3v3_sensor: regulator@13 {
+			compatible = "regulator-fixed";
+			reg = <13>;
+			regulator-name = "+3V3_SENSOR";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&pmic 1 GPIO_ACTIVE_HIGH>;
 			enable-active-high;
-			vin-supply = <&vdd_5v0_sys>;
+			vin-supply = <&vdd_3v3_run>;
 		};
 	};
 

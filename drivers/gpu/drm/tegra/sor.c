@@ -2987,7 +2987,7 @@ static int tegra_sor_probe(struct platform_device *pdev)
 	if (err < 0)
 		return err;
 
-	err = tegra_output_probe(&sor->output);
+	err = tegra_output_probe(sor->dev->of_node, &sor->output);
 	if (err < 0) {
 		dev_err(&pdev->dev, "failed to probe output: %d\n", err);
 		return err;
@@ -3010,7 +3010,7 @@ static int tegra_sor_probe(struct platform_device *pdev)
 	}
 
 	if (!pdev->dev.pm_domain) {
-		sor->rst = devm_reset_control_get(&pdev->dev, "sor");
+		sor->rst = of_reset_control_get(sor->dev->of_node, "sor");
 		if (IS_ERR(sor->rst)) {
 			err = PTR_ERR(sor->rst);
 			dev_err(&pdev->dev, "failed to get reset control: %d\n",
