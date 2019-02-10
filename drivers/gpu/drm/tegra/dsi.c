@@ -1483,7 +1483,7 @@ static int tegra_dsi_probe(struct platform_device *pdev)
 	if (err < 0)
 		return err;
 
-	err = tegra_output_probe(&dsi->output);
+	err = tegra_output_probe(dsi->output.of_node, &dsi->output);
 	if (err < 0)
 		return err;
 

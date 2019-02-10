@@ -316,8 +316,11 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 	panel->no_hpd = of_property_read_bool(dev->of_node, "no-hpd");
 
 	panel->supply = devm_regulator_get(dev, "power");
-	if (IS_ERR(panel->supply))
+	if (IS_ERR(panel->supply)) {
+		dev_err(dev, "failed to get power regulator: %d\n",
+					(int) PTR_ERR(panel->supply));
 		return PTR_ERR(panel->supply);
+	}
 
 	panel->enable_gpio = devm_gpiod_get_optional(dev, "enable",
 						     GPIOD_OUT_LOW);
@@ -333,8 +336,12 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 		panel->backlight = of_find_backlight_by_node(backlight);
 		of_node_put(backlight);
 
-		if (!panel->backlight)
+		if (IS_ERR(panel->backlight)) {
+			dev_err(dev, "failed to get backlight: %d\n", PTR_ERR(panel->backlight));
 			return -EPROBE_DEFER;
+		}
+	} else {
+		dev_warn(dev, "missing backlight\n");
 	}
 
 	ddc = of_parse_phandle(dev->of_node, "ddc-i2c-bus", 0);
@@ -343,11 +350,15 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 		of_node_put(ddc);
 
 		if (!panel->ddc) {
+			dev_err(dev, "failed to get ddc-i2c-bus\n");
 			err = -EPROBE_DEFER;
 			goto free_backlight;
 		}
+	} else {
+		dev_warn(dev, "missing ddc-i2c-bus\n");
 	}
 
+	dev_info(dev, "panel init\n");
 	drm_panel_init(&panel->base);
 	panel->base.dev = dev;
 	panel->base.funcs = &panel_simple_funcs;
@@ -2595,6 +2606,7 @@ static int panel_simple_platform_probe(struct platform_device *pdev)
 	const struct of_device_id *id;
 
 	id = of_match_node(platform_of_match, pdev->dev.of_node);
+
 	if (!id)
 		return -ENODEV;
 
@@ -2611,7 +2623,7 @@ static void panel_simple_platform_shutdown(struct platform_device *pdev)
 	panel_simple_shutdown(&pdev->dev);
 }
 
-static struct platform_driver panel_simple_platform_driver = {
+struct platform_driver panel_simple_platform_driver = {
 	.driver = {
 		.name = "panel-simple",
 		.of_match_table = platform_of_match,
@@ -2620,6 +2632,7 @@ static struct platform_driver panel_simple_platform_driver = {
 	.remove = panel_simple_platform_remove,
 	.shutdown = panel_simple_platform_shutdown,
 };
+EXPORT_SYMBOL(panel_simple_platform_driver);
 
 struct panel_desc_dsi {
 	struct panel_desc desc;
@@ -2799,7 +2812,7 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 	const struct panel_desc_dsi *desc;
 	const struct of_device_id *id;
 	int err;
-
+	
 	id = of_match_node(dsi_of_match, dsi->dev.of_node);
 	if (!id)
 		return -ENODEV;
@@ -2833,7 +2846,7 @@ static void panel_simple_dsi_shutdown(struct mipi_dsi_device *dsi)
 	panel_simple_shutdown(&dsi->dev);
 }
 
-static struct mipi_dsi_driver panel_simple_dsi_driver = {
+struct mipi_dsi_driver panel_simple_dsi_driver = {
 	.driver = {
 		.name = "panel-simple-dsi",
 		.of_match_table = dsi_of_match,
@@ -2842,12 +2855,16 @@ static struct mipi_dsi_driver panel_simple_dsi_driver = {
 	.remove = panel_simple_dsi_remove,
 	.shutdown = panel_simple_dsi_shutdown,
 };
+EXPORT_SYMBOL(panel_simple_dsi_driver);
 
 static int __init panel_simple_init(void)
 {
 	int err;
-
+#if defined(CONFIG_DRM_TEGRA) && defined(CONFIG_TEGRA_HOST1X)
+	printk(KERN_INFO "panel-simple registration done by tegra drm\n");
+#else
 	err = platform_driver_register(&panel_simple_platform_driver);
+
 	if (err < 0)
 		return err;
 
@@ -2856,17 +2873,21 @@ static int __init panel_simple_init(void)
 		if (err < 0)
 			return err;
 	}
+#endif
 
-	return 0;
+	return err;
 }
 module_init(panel_simple_init);
 
+
 static void __exit panel_simple_exit(void)
 {
+#if ! (defined(CONFIG_DRM_TEGRA) && defined(CONFIG_TEGRA_HOST1X))
 	if (IS_ENABLED(CONFIG_DRM_MIPI_DSI))
 		mipi_dsi_driver_unregister(&panel_simple_dsi_driver);
 
 	platform_driver_unregister(&panel_simple_platform_driver);
+#endif
 }
 module_exit(panel_simple_exit);
 

@@ -1715,7 +1715,7 @@ static int tegra_hdmi_probe(struct platform_device *pdev)
 
 	hdmi->output.dev = &pdev->dev;
 
-	err = tegra_output_probe(&hdmi->output);
+	err = tegra_output_probe(hdmi->dev->of_node, &hdmi->output);
 	if (err < 0)
 		return err;
 
