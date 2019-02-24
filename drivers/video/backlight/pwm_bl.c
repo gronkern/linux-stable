@@ -537,7 +537,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
 		goto err_alloc;
 	}
 
-	dev_dbg(&pdev->dev, "got pwm for backlight\n");
+	dev_info(&pdev->dev, "got pwm for backlight\n");
 
 	if (!data->levels) {
 		/* Get the PWM period (in nanoseconds) */

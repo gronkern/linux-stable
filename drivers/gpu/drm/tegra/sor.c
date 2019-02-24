@@ -1900,8 +1900,12 @@ static void tegra_sor_edp_enable(struct drm_encoder *encoder)
 	if (err < 0)
 		dev_err(sor->dev, "failed to enable DC: %d\n", err);
 
+	msleep(100);
+
 	if (output->panel)
-		drm_panel_enable(output->panel);
+		err = drm_panel_enable(output->panel);
+
+	dev_info(sor->dev, "tegra sor edp enabled: %d\n", err);
 }
 
 static int
@@ -2991,6 +2995,16 @@ static int tegra_sor_probe(struct platform_device *pdev)
 	if (err < 0) {
 		dev_err(&pdev->dev, "failed to probe output: %d\n", err);
 		return err;
+	}
+
+	//If output is not available defer probe
+	if(sor && (sor->output.panel)
+		&& (sor->output.panel->dev) && 
+		(sor->output.panel->dev->of_node) &&
+		(NULL == of_drm_find_panel(sor->output.panel->dev->of_node))) {
+			dev_warn(&pdev->dev, "panel not added to drm: deferring\n");
+			err = -EPROBE_DEFER;
+			goto output;
 	}
 
 	if (sor->ops && sor->ops->probe) {

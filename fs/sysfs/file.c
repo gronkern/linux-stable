@@ -130,11 +130,18 @@ static ssize_t sysfs_kf_read(struct kernfs_open_file *of, char *buf,
 static ssize_t sysfs_kf_write(struct kernfs_open_file *of, char *buf,
 			      size_t count, loff_t pos)
 {
+	struct kobject *kobj;
 	const struct sysfs_ops *ops = sysfs_file_ops(of->kn);
-	struct kobject *kobj = of->kn->parent->priv;
+
+	kobj = of->kn->parent->priv;
 
 	if (!count)
 		return 0;
+
+	if(NULL == ops->store) {
+		pr_warn("sysfs_kf_write: NULL ops->store!\n");
+		return 0;
+	}
 
 	return ops->store(kobj, of->kn->priv, buf, count);
 }

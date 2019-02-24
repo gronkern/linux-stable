@@ -11,6 +11,7 @@
 #include <linux/host1x.h>
 #include <linux/idr.h>
 #include <linux/iommu.h>
+#include <linux/regulator/consumer.h>
 
 #include <drm/drm_atomic.h>
 #include <drm/drm_atomic_helper.h>
@@ -1285,18 +1286,7 @@ static struct host1x_driver host1x_drm_driver = {
 	.subdevs = host1x_drm_subdevs,
 };
 
-#if defined CONFIG_DRM_PANEL_SIMPLE
-	extern struct __init platform_driver panel_simple_platform_driver;
-#if defined CONFIG_DRM_MIPI_DSI
-	extern struct __init mipi_dsi_driver panel_simple_dsi_driver;
-#endif
-#endif
-
-
 static struct platform_driver * const drivers[] = {
-#if defined CONFIG_DRM_PANEL_SIMPLE
-	&panel_simple_platform_driver,
-#endif
 	&tegra_display_hub_driver,
 	&tegra_dc_driver,
 	&tegra_hdmi_driver,
@@ -1319,14 +1309,6 @@ static int __init host1x_drm_init(void)
 	err = platform_register_drivers(drivers, ARRAY_SIZE(drivers));
 	if (err < 0)
 		goto unregister_host1x;
-
-#if defined CONFIG_DRM_MIPI_DSI
-	err = mipi_dsi_driver_register(&panel_simple_dsi_driver);
-	if (err < 0) {
-		goto unregister_host1x;
-	}
-#endif
-
 	return 0;
 
 unregister_host1x:

@@ -66,6 +66,8 @@ int drm_panel_add(struct drm_panel *panel)
 	list_add_tail(&panel->list, &panel_list);
 	mutex_unlock(&panel_lock);
 
+	dev_info(panel->dev, "panel added\n");
+
 	return 0;
 }
 EXPORT_SYMBOL(drm_panel_add);
@@ -81,6 +83,8 @@ void drm_panel_remove(struct drm_panel *panel)
 	mutex_lock(&panel_lock);
 	list_del_init(&panel->list);
 	mutex_unlock(&panel_lock);
+	
+	dev_info(panel->dev, "panel removed\n");
 }
 EXPORT_SYMBOL(drm_panel_remove);
 
@@ -101,11 +105,15 @@ EXPORT_SYMBOL(drm_panel_remove);
  */
 int drm_panel_attach(struct drm_panel *panel, struct drm_connector *connector)
 {
-	if (panel->connector)
+	if (panel->connector) {
+		dev_info(panel->dev, "connector busy\n");
 		return -EBUSY;
+	}
 
 	panel->connector = connector;
 	panel->drm = connector->dev;
+	
+	dev_info(panel->dev, "panel attached\n");
 
 	return 0;
 }

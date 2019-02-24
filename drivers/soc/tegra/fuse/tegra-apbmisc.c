@@ -153,9 +153,11 @@ void __init tegra_init_apbmisc(void)
 			 * At this point we're not running on Tegra, so play
 			 * nice with multi-platform kernels.
 			 */
+			pr_warn("SOC is no tegra\n");
 			return;
 		}
 	} else {
+		pr_warn("APBMISC not found\n");
 		/*
 		 * Extract information from the device tree if we've found a
 		 * matching node.

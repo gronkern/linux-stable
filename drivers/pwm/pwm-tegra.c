@@ -158,6 +158,8 @@ static int tegra_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
 	val |= PWM_ENABLE;
 	pwm_writel(pc, pwm->hwpwm, val);
 
+	dev_info(pwm->chip->dev, "tegra pwm enabled\n");
+
 	return 0;
 }
 
@@ -171,6 +173,8 @@ static void tegra_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
 	pwm_writel(pc, pwm->hwpwm, val);
 
 	clk_disable_unprepare(pc->clk);
+	
+	dev_info(pwm->chip->dev, "tegra pwm disabled\n");
 }
 
 static const struct pwm_ops tegra_pwm_ops = {
@@ -195,14 +199,18 @@ static int tegra_pwm_probe(struct platform_device *pdev)
 
 	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	pwm->regs = devm_ioremap_resource(&pdev->dev, r);
-	if (IS_ERR(pwm->regs))
+	if (IS_ERR(pwm->regs)) {
+		dev_err(&pdev->dev, "Failed to remap memory: %d\n", (int) PTR_ERR(&pdev->dev));
 		return PTR_ERR(pwm->regs);
+	}
 
 	platform_set_drvdata(pdev, pwm);
 
 	pwm->clk = devm_clk_get(&pdev->dev, NULL);
-	if (IS_ERR(pwm->clk))
+	if (IS_ERR(pwm->clk)) {
+		dev_err(&pdev->dev, "failed to get clk: %d\n", (int) PTR_ERR(pwm->clk));
 		return PTR_ERR(pwm->clk);
+	}
 
 	/* Set maximum frequency of the IP */
 	ret = clk_set_rate(pwm->clk, pwm->soc->max_frequency);
@@ -237,6 +245,8 @@ static int tegra_pwm_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "pwmchip_add() failed: %d\n", ret);
 		reset_control_assert(pwm->rst);
 		return ret;
+	} else {
+		dev_info(&pdev->dev, "tegra pwm added\n");
 	}
 
 	return 0;
@@ -252,8 +262,10 @@ static int tegra_pwm_remove(struct platform_device *pdev)
 		return -ENODEV;
 
 	err = clk_prepare_enable(pc->clk);
-	if (err < 0)
+	if (err < 0) {
+		dev_err(&pdev->dev, "Failed to enable clk enabled: %d\n", err);
 		return err;
+	}
 
 	for (i = 0; i < pc->chip.npwm; i++) {
 		struct pwm_device *pwm = &pc->chip.pwms[i];
@@ -270,7 +282,10 @@ static int tegra_pwm_remove(struct platform_device *pdev)
 	reset_control_assert(pc->rst);
 	clk_disable_unprepare(pc->clk);
 
-	return pwmchip_remove(&pc->chip);
+	err = pwmchip_remove(&pc->chip);
+	dev_info(&pdev->dev, "Pwm removed: %d\n", err);
+	
+	return err;
 }
 
 #ifdef CONFIG_PM_SLEEP

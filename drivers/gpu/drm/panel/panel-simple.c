@@ -226,6 +226,7 @@ static int panel_simple_prepare(struct drm_panel *panel)
 static int panel_simple_enable(struct drm_panel *panel)
 {
 	struct panel_simple *p = to_panel_simple(panel);
+	int err;
 
 	if (p->enabled)
 		return 0;
@@ -236,8 +237,11 @@ static int panel_simple_enable(struct drm_panel *panel)
 	if (p->backlight) {
 		p->backlight->props.state &= ~BL_CORE_FBBLANK;
 		p->backlight->props.power = FB_BLANK_UNBLANK;
-		backlight_update_status(p->backlight);
+		err = backlight_update_status(p->backlight);
+		pr_info("backlight status updated: %d\n", err);
 	}
+
+	pr_info("panel enabled\n");
 
 	p->enabled = true;
 
@@ -291,6 +295,23 @@ static const struct drm_panel_funcs panel_simple_funcs = {
 	.get_timings = panel_simple_get_timings,
 };
 
+//struct notifier_block regulator_enabled;
+
+/*static int on_regulator_enabled(struct notifier_block *this,
+                                 unsigned long event, void *data)
+{
+	struct device *dev = (struct device*) data;
+	if(NULL != dev) {
+		dev_info(dev, "notifier: %d\n", (int) event);
+	}
+	
+	if(event == REGULATOR_EVENT_ENABLE) {
+		printk(KERN_INFO "dinkle enabled\n");
+	}
+
+	return 0;
+}*/
+
 static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 {
 	struct device_node *backlight, *ddc;
@@ -308,7 +329,7 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 	panel->supply = devm_regulator_get(dev, "power");
 
 	if (IS_ERR(panel->supply)) {
-		dev_err(dev, "failed to get power regulator: %d\n",
+		dev_warn(dev, "failed to get power regulator: %d\n",
 					(int) PTR_ERR(panel->supply));
 		return PTR_ERR(panel->supply);
 	}
@@ -2844,10 +2865,6 @@ EXPORT_SYMBOL(panel_simple_dsi_driver);
 static int __init panel_simple_init(void)
 {
 	int err;
-#if defined(CONFIG_DRM_TEGRA) && defined(CONFIG_TEGRA_HOST1X)
-	printk(KERN_INFO "panel-simple registration done by tegra drm\n");
-	err = -EPROBE_DEFER;
-#else
 	err = platform_driver_register(&panel_simple_platform_driver);
 	if (err < 0)
 		return err;
@@ -2857,19 +2874,19 @@ static int __init panel_simple_init(void)
 		if (err < 0)
 			return err;
 	}
-#endif
+	
+	//regulator_enabled.notifier_call = on_regulator_enabled;
+	
 	return err;
 }
 module_init(panel_simple_init);
 
 static void __exit panel_simple_exit(void)
 {
-#if ! (defined(CONFIG_DRM_TEGRA) && defined(CONFIG_TEGRA_HOST1X))
 	if (IS_ENABLED(CONFIG_DRM_MIPI_DSI))
 		mipi_dsi_driver_unregister(&panel_simple_dsi_driver);
 
 	platform_driver_unregister(&panel_simple_platform_driver);
-#endif
 }
 module_exit(panel_simple_exit);
 
