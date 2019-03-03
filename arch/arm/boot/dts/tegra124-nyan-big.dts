@@ -23,6 +23,10 @@
 		status = "okay";
 	};
 
+	apbmisc@70000800 {
+		nvidia,long-ram-code = <1>;
+	};
+
 	sdhci@700b0400 { /* SD Card on this bus */
 		wp-gpios = <&gpio TEGRA_GPIO(Q, 4) GPIO_ACTIVE_LOW>;
 	};

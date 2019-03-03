@@ -145,9 +145,6 @@ void __init tegra_init_apbmisc(void)
 
 			straps.flags = IORESOURCE_MEM;
 
-			pr_warn("Using APBMISC region %pR\n", &apbmisc);
-			pr_warn("Using strapping options registers %pR\n",
-				&straps);
 		} else {
 			/*
 			 * At this point we're not running on Tegra, so play
@@ -157,7 +154,6 @@ void __init tegra_init_apbmisc(void)
 			return;
 		}
 	} else {
-		pr_warn("APBMISC not found\n");
 		/*
 		 * Extract information from the device tree if we've found a
 		 * matching node.
@@ -182,4 +178,8 @@ void __init tegra_init_apbmisc(void)
 		pr_err("failed to map strapping options registers\n");
 
 	long_ram_code = of_property_read_bool(np, "nvidia,long-ram-code");
+
+	pr_warn("Using APBMISC region %pR\n", &apbmisc);
+        pr_warn("Using strapping options registers %pR (%sRAM %i)\n",
+			&straps, ((long_ram_code)? "long " : "" ), tegra_read_ram_code());
 }

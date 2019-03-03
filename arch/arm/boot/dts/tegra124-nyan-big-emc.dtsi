@@ -2,7 +2,7 @@
 / {
 	clock@60006000 {
 		emc-timings-1 {
-			nvidia,ram-code = <1>;
+			nvidia,ram-code = <4>;
 
 			timing-12750000 {
 				clock-frequency = <12750000>;
@@ -70,7 +70,7 @@
 
 	emc@7001b000 {
 		emc-timings-1 {
-			nvidia,ram-code = <1>;
+			nvidia,ram-code = <4>;
 
 			timing-12750000 {
 				clock-frequency = <12750000>;
@@ -1757,7 +1757,7 @@
 
 	memory-controller@70019000 {
 		emc-timings-1 {
-			nvidia,ram-code = <1>;
+			nvidia,ram-code = <4>;
 
 
 			timing-12750000 {
