@@ -138,3 +138,4 @@ empty
 image*
 kernel-config*
 nyan*
+scripts/kconfig/mconf-cfg
