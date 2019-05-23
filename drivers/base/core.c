@@ -42,7 +42,6 @@ static int __init sysfs_deprecated_setup(char *arg)
 early_param("sysfs.deprecated", sysfs_deprecated_setup);
 #endif
 
-#define DEBUG 1
 
 /* Device links support. */
 

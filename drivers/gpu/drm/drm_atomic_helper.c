@@ -36,8 +36,6 @@
 #include "drm_crtc_helper_internal.h"
 #include "drm_crtc_internal.h"
 
-#define DEBUG 1
-
 /**
  * DOC: overview
  *

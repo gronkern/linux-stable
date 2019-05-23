@@ -686,7 +686,7 @@ static int tegra_sor_attach(struct tegra_sor *sor)
 	tegra_sor_writel(sor, value, SOR_SUPER_STATE1);
 	tegra_sor_super_update(sor);
 
-	timeout = jiffies + nsecs_to_jiffies(500); //msecs_to_jiffies(250);
+	timeout = jiffies + msecs_to_jiffies(250);
 
 	while (time_before(jiffies, timeout)) {
 		value = tegra_sor_readl(sor, SOR_TEST);
@@ -1900,7 +1900,7 @@ static void tegra_sor_edp_enable(struct drm_encoder *encoder)
 	if (err < 0)
 		dev_err(sor->dev, "failed to enable DC: %d\n", err);
 
-	msleep(100);
+	//msleep(100);
 
 	if (output->panel)
 		err = drm_panel_enable(output->panel);
