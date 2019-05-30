@@ -680,15 +680,15 @@ static int tegra_sor_attach(struct tegra_sor *sor)
 	tegra_sor_writel(sor, value, SOR_SUPER_STATE1);
 	tegra_sor_super_update(sor);
 
-	/* attach */
-	value = tegra_sor_readl(sor, SOR_SUPER_STATE1);
-	value |= SOR_SUPER_STATE_ATTACHED;
-	tegra_sor_writel(sor, value, SOR_SUPER_STATE1);
-	tegra_sor_super_update(sor);
-
-	timeout = jiffies + msecs_to_jiffies(250);
+	timeout = jiffies + msecs_to_jiffies(300);
 
 	while (time_before(jiffies, timeout)) {
+		/* attach */
+		value = tegra_sor_readl(sor, SOR_SUPER_STATE1);
+		value |= SOR_SUPER_STATE_ATTACHED;
+		tegra_sor_writel(sor, value, SOR_SUPER_STATE1);
+		tegra_sor_super_update(sor);
+		
 		value = tegra_sor_readl(sor, SOR_TEST);
 		if ((value & SOR_TEST_ATTACHED) != 0)
 			return 0;

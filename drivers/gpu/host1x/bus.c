@@ -135,6 +135,10 @@ static void host1x_subdev_register(struct host1x_device *device,
 	mutex_unlock(&device->subdevs_lock);
 
 	if (list_empty(&device->subdevs)) {
+		if(NULL != &device->dev.kobj) {
+			dev_warn(&device->dev, "kobject is NULL\n");
+		}
+
 		err = device_add(&device->dev);
 		if (err < 0)
 			dev_err(&device->dev, "failed to add: %d\n", err);
