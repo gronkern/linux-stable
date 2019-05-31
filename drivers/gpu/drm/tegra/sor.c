@@ -680,7 +680,7 @@ static int tegra_sor_attach(struct tegra_sor *sor)
 	tegra_sor_writel(sor, value, SOR_SUPER_STATE1);
 	tegra_sor_super_update(sor);
 
-	timeout = jiffies + msecs_to_jiffies(300);
+	timeout = jiffies + msecs_to_jiffies(250);
 
 	while (time_before(jiffies, timeout)) {
 		/* attach */
