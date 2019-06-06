@@ -83,7 +83,7 @@ void drm_panel_remove(struct drm_panel *panel)
 	mutex_lock(&panel_lock);
 	list_del_init(&panel->list);
 	mutex_unlock(&panel_lock);
-	
+
 	dev_info(panel->dev, "panel removed\n");
 }
 EXPORT_SYMBOL(drm_panel_remove);
@@ -112,7 +112,7 @@ int drm_panel_attach(struct drm_panel *panel, struct drm_connector *connector)
 
 	panel->connector = connector;
 	panel->drm = connector->dev;
-	
+
 	dev_info(panel->dev, "panel attached\n");
 
 	return 0;

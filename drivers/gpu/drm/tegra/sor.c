@@ -688,7 +688,7 @@ static int tegra_sor_attach(struct tegra_sor *sor)
 		value |= SOR_SUPER_STATE_ATTACHED;
 		tegra_sor_writel(sor, value, SOR_SUPER_STATE1);
 		tegra_sor_super_update(sor);
-		
+
 		value = tegra_sor_readl(sor, SOR_TEST);
 		if ((value & SOR_TEST_ATTACHED) != 0)
 			return 0;
@@ -2999,7 +2999,7 @@ static int tegra_sor_probe(struct platform_device *pdev)
 
 	//If output is not available defer probe
 	if(sor && (sor->output.panel)
-		&& (sor->output.panel->dev) && 
+		&& (sor->output.panel->dev) &&
 		(sor->output.panel->dev->of_node) &&
 		(NULL == of_drm_find_panel(sor->output.panel->dev->of_node))) {
 			dev_warn(&pdev->dev, "panel not added to drm: deferring\n");

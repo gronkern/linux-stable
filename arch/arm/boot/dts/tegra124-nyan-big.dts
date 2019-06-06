@@ -31,22 +31,6 @@
 					20 20 20 20 00 00 00 fe
 					00 42 31 33 33 48 54 4e
 					30 31 2e 31 20 0a 00 12];
-					/*c7 a8 09 52 23 7e 39 e3
-					b6 1e 05 b9 2a 94 3b 56
-					6c cb f0 d8 a3 75 5a f5
-					6b 1d 0d 7b 57 da 33 29
-					ae ff d4 cd 26 a9 cb b5
-					82 e0 39 4c 0a 17 07 bb
-					15 e0 88 63 89 87 b5 5d
-					cc 91 58 53 70 37 b3 38
-					07 3d 89 06 ab 05 18 24
-					c9 2c 55 9f 55 2c b8 5d
-					b5 92 70 98 8d 5f 1f 2d
-					81 77 34 e4 60 99 cc 81
-					11 d3 36 5c 01 51 50 f8
-					07 33 1c 0f fd 83 a0 b0
-					83 2b 5c c5 3b 76 17 ea
-					c1 44 25 75 cb c4 43 18];*/
 		};
 	};
 
@@ -57,7 +41,7 @@
 		backlight = <&backlight>;
 		ddc-i2c-bus = <&hdmi_ddc>;
 		power-supply = <&vdd_5v0_avd_lcd>;
-	
+
 		status = "okay";
 	};
 

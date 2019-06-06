@@ -295,23 +295,6 @@ static const struct drm_panel_funcs panel_simple_funcs = {
 	.get_timings = panel_simple_get_timings,
 };
 
-//struct notifier_block regulator_enabled;
-
-/*static int on_regulator_enabled(struct notifier_block *this,
-                                 unsigned long event, void *data)
-{
-	struct device *dev = (struct device*) data;
-	if(NULL != dev) {
-		dev_info(dev, "notifier: %d\n", (int) event);
-	}
-	
-	if(event == REGULATOR_EVENT_ENABLE) {
-		printk(KERN_INFO "dinkle enabled\n");
-	}
-
-	return 0;
-}*/
-
 static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 {
 	struct device_node *backlight, *ddc;
@@ -2874,8 +2857,6 @@ static int __init panel_simple_init(void)
 		if (err < 0)
 			return err;
 	}
-	
-	//regulator_enabled.notifier_call = on_regulator_enabled;
 	
 	return err;
 }

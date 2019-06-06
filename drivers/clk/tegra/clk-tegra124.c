@@ -1020,7 +1020,7 @@ static __init void tegra124_periph_clk_init(void __iomem *clk_base,
 	clk = clk_register_fixed_factor(NULL, "xusb_ss_div2", "xusb_ss_src", 0,
 					1, 2);
 	clks[TEGRA124_CLK_XUSB_SS_DIV2] = clk;
-	
+
 	clk = tegra_clk_register_periph_fixed("dpaux", "pll_p", 0, clk_base,
 					      1, 17, TEGRA124_CLK_DPAUX);
 	clks[TEGRA124_CLK_DPAUX] = clk;
@@ -1147,7 +1147,7 @@ static void __init tegra124_pll_init(void __iomem *clk_base,
 					CLK_SET_RATE_PARENT, 1, 2);
 	clk_register_clkdev(clk, "pll_d_out0", NULL);
 	clks[TEGRA124_CLK_PLL_D_OUT0] = clk;
-	
+
 	/* PLLRE */
 	clk = tegra_clk_register_pllre("pll_re_vco", "pll_ref", clk_base, pmc,
 			     0, &pll_re_vco_params, &pll_re_lock, pll_ref_freq);
